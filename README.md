@@ -6,10 +6,9 @@ This program performs various operations with binary numbers, including conversi
 ### 1. Conversions
    The conversion works as well for signed, unsigned (two's complement) and IEEE 754 (floating-point)
 
-   - **to Binary**: Convert each base you want to binary
-   - **to Hexadecimal**: Convert each base you want to hexadecimal
-   - **to Decimal**: Convert each base you want to decimal
-   - **to Custom base**: convert each base you want to a custom base
+   - **to Binary**: Convert hexadecimal or decimal to binary
+   - **to Hexadecimal**: Convert binay or decimal to hexadecimal
+   - **to Decimal**: Convert binary or hexadecimal to decimal
 
 ### 2. Shifting Operations
    The conversion works as well for signed, unsigned (two's complement) and IEEE 754 (floating-point)

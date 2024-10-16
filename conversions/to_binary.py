@@ -2,13 +2,16 @@ class to_bin:
     def __init__(self, from_base):
         '''
         from_base: number to convert
-        type: unsigned (u), signed (s) or fraction (f)
         '''
 
         self.from_base = from_base
 
     @staticmethod
-    def add_plus_one(a, b):
+    def add_one(a, b):
+        '''
+        add 1 to a binary number 
+        '''
+
         res = ''
 
         b =  b.zfill(len(a))
@@ -38,10 +41,34 @@ class to_bin:
         res = res[::-1]
 
         return res
+    
+    @staticmethod
+    def dec_to_bin_unsigned(x):
+        '''
+        convert decimal positive number to binary unsigned 
+        '''
+        
+        if x == 0:
+            return '0'
+        
+        res = ''
+
+        while x > 0:            
+            if x % 2 == 0:
+                res += '0'
+            else:
+                res += '1'
+
+            x //= 2
+            
+        res = res[::-1]
+
+        return res
 
     def check_type(self):
         '''
-        check type: unsigned (u), signed (s) or fraction (f)
+        check if the number is positive or negative,
+        to understand if you have to convert it to unsigned (u) or signed (s)
         '''
 
         type = ''
@@ -65,21 +92,20 @@ class to_bin:
 
     def __call__(self):
         '''
-        check and convert number
+        check if the number is valid and convert it
 
         valid numbers:
             - hex (str)
             - dec (int)
-            - custom base
 
         invalid numbers:
-            - bin: not checked the validity, because if you passed 1101 base 2 it will read as 1101 base 10
-            - boolearn
+            - bin (if you passed 1101 it will read as 1101 base 10)
+            - boolean
             - list
             - ...
         '''
    
-        # check if the type of from_base is an int or str
+        # check if the number is valid
         if isinstance(self.from_base, str):
             res = self.hex_to_bin()
 
@@ -87,17 +113,19 @@ class to_bin:
         elif isinstance(self.from_base, int):
             # check if is not boolean, because True is considered also as int (1)
             if self.is_dec():
-                self.type = self.check_type()
+                type = self.check_type()
 
-                res = self.dec_to_bin()
+                res = self.dec_to_bin(type)
               
                 return res
             else:  
                 print('ERROR: Boolean is not valid')
 
                 return False
+        elif isinstance(self.from_base, float):
+            pass
         else:
-            print('ERROR: Invalid value')
+            print('ERROR: Invalid number')
 
             return False
 
@@ -129,27 +157,8 @@ class to_bin:
                 res += self.dec_to_bin(dic[i])
    
         return res
-    
-    @staticmethod
-    def dec_to_bin_2(x):
-        if x == 0:
-            return '0'
-        
-        res = ''
 
-        while x > 0:            
-            if x % 2 == 0:
-                res += '0'
-            else:
-                res += '1'
-
-            x //= 2
-            
-        res = res[::-1]
-
-        return res
-
-    def dec_to_bin(self, from_base=None):
+    def dec_to_bin(self, type='u', from_base=None):
         '''
         convert dec to bin
         '''
@@ -163,34 +172,20 @@ class to_bin:
         if from_base == 0:
             return '0'
 
-        if self.type == 'u':
-            while from_base > 0:            
-                if from_base % 2 == 0:
-                    res += '0'
-                else:
-                    res += '1'
-
-                from_base //= 2
-            
-            res = res[::-1]
-        elif self.type == 's':
+        if type == 'u':
+            res = self.dec_to_bin_unsigned(self.from_base)
+        elif type == 's':
             abs_val = abs(self.from_base)
      
-            res = self.dec_to_bin_2(abs_val)
+            res = self.dec_to_bin_unsigned(abs_val)
         
             l_res = list(res)
 
             res = ''.join(['0' if i == '1' else '1' for i in l_res])
 
-            res = self.add_plus_one(res, '1')
+            res = self.add_one(res, '1')
 
             if res[0] == '0':
                 res = '1' + res
          
         return res
-
-    def custom_base_to_bin(self):
-        '''
-        convert custom base to bin
-        '''
-
