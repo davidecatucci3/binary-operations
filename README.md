@@ -27,4 +27,4 @@ This program performs various operations with binary numbers, including conversi
 
 ## How to Use It
 examples auto type detection
-missunderstanding between binary and decimal
+bit extensiob

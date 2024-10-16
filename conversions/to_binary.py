@@ -1,13 +1,15 @@
 class to_bin:
-    def __init__(self, from_base):
+    def __init__(self, from_base, n=0):
         '''
         from_base: number to convert
+        n: number of bits in wich youn want you binary number
         '''
 
         self.from_base = from_base
+        self.n = n
 
     @staticmethod
-    def add_one(a, b):
+    def add_one(a: str, b: str) -> str:
         '''
         add 1 to a binary number 
         '''
@@ -42,12 +44,20 @@ class to_bin:
 
         return res
     
-    @staticmethod
-    def dec_to_bin_unsigned(x):
+    def bit_ext(self, x, type):
+        bit_to_add = self.n - len(x) 
+
+        pre = '1' * bit_to_add if type == 's' else '0' * bit_to_add
+
+        x = pre + x
+
+        return x
+    
+    def dec_to_bin_unsigned(self, x: str) -> str:
         '''
         convert decimal positive number to binary unsigned 
         '''
-        
+
         if x == 0:
             return '0'
         
@@ -65,7 +75,7 @@ class to_bin:
 
         return res
 
-    def check_type(self):
+    def check_type(self) -> str:
         '''
         check if the number is positive or negative,
         to understand if you have to convert it to unsigned (u) or signed (s)
@@ -80,7 +90,7 @@ class to_bin:
 
         return type
 
-    def is_dec(self):
+    def is_dec(self) -> bool:
         '''
         check if a number is decimal
         '''
@@ -129,7 +139,7 @@ class to_bin:
 
             return False
 
-    def hex_to_bin(self):
+    def hex_to_bin(self) -> str:
         '''
         convert hex to bin
         '''
@@ -150,15 +160,18 @@ class to_bin:
 
         for i in self.from_base:
             i = i.upper()
-
+        
             if i.isdigit():
-                res += self.dec_to_bin(i)
+                res += self.dec_to_bin_unsigned(i)
             else:
-                res += self.dec_to_bin(dic[i])
+                res += self.dec_to_bin_unsigned(dic[i])
+        
+        if self.n > len(res):
+            res = self.bit_ext(res, 'u')
    
         return res
 
-    def dec_to_bin(self, type='u', from_base=None):
+    def dec_to_bin(self, type='u', from_base=None) -> str:
         '''
         convert dec to bin
         '''
@@ -168,12 +181,12 @@ class to_bin:
         # use this method because i need to re-use dec_to_bin() in hex_to_bin()
         if from_base == None:
             from_base = self.from_base
-        
-        if from_base == 0:
-            return '0'
 
         if type == 'u':
             res = self.dec_to_bin_unsigned(self.from_base)
+
+            if self.n > len(res):
+                res = self.bit_ext(res, 'u')
         elif type == 's':
             abs_val = abs(self.from_base)
      
@@ -187,5 +200,13 @@ class to_bin:
 
             if res[0] == '0':
                 res = '1' + res
+            
+            if self.n > len(res):
+                res = self.bit_ext(res, type)
          
         return res
+    
+print(to_bin('EE', 32)())
+print(to_bin(-1, 4)())
+print(to_bin(11, 16)())
+print(to_bin(0, 8)())
