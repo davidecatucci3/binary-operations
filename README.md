@@ -4,10 +4,14 @@ This program performs various operations with binary numbers, including conversi
 ## List of operations
 
 ### 1. Conversions
-   - **to Binary**: Convert each base you want to binary
-   - **to Hexadecimal**: Convert each base you want to hexadecimal
-   - **to Decimal**: Convert each base you want to decimal
-   - **to Custom base**: convert each base you want to a custom base
+   - **Unsigned and Signed**
+      - **to Binary**: Convert each base you want to binary
+      - **to Hexadecimal**: Convert each base you want to hexadecimal
+      - **to Decimal**: Convert each base you want to decimal
+      - **to Custom base**: convert each base you want to a custom base
+
+   - **Fraction**
+   
 
 ### 2. Shifting Operations
    - **Logical Shifts**: Shift bits to the left or right by a specified number of positions and fill the rest with 0's
