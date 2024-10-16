@@ -9,14 +9,14 @@ class to_bin:
         self.n = n
 
     @staticmethod
-    def add_one(a: str, b: str) -> str:
+    def add_one(a: str) -> str:
         '''
         add 1 to a binary number 
         '''
 
         res = ''
 
-        b =  b.zfill(len(a))
+        b =  '1'.zfill(len(a))
 
         carry = '0'
 
@@ -78,15 +78,18 @@ class to_bin:
     def check_type(self) -> str:
         '''
         check if the number is positive or negative,
-        to understand if you have to convert it to unsigned (u) or signed (s)
+        to understand if you have to convert it to unsigned (u), signed (s) or fraction (f)
         '''
 
         type = ''
 
-        if self.from_base < 0:
-            type = 's'
+        if isinstance(self.from_base, int):
+            if self.from_base < 0:
+                type = 's'
+            else:
+                type = 'u'
         else:
-            type = 'u'
+            type = 'f'
 
         return type
 
@@ -120,7 +123,7 @@ class to_bin:
             res = self.hex_to_bin()
 
             return res
-        elif isinstance(self.from_base, int):
+        elif isinstance(self.from_base, int) or isinstance(self.from_base, float):
             # check if is not boolean, because True is considered also as int (1)
             if self.is_dec():
                 type = self.check_type()
@@ -132,8 +135,6 @@ class to_bin:
                 print('ERROR: Boolean is not valid')
 
                 return False
-        elif isinstance(self.from_base, float):
-            pass
         else:
             print('ERROR: Invalid number')
 
@@ -171,16 +172,12 @@ class to_bin:
    
         return res
 
-    def dec_to_bin(self, type='u', from_base=None) -> str:
+    def dec_to_bin(self, type='u') -> str:
         '''
         convert dec to bin
         '''
 
         res = ''
-
-        # use this method because i need to re-use dec_to_bin() in hex_to_bin()
-        if from_base == None:
-            from_base = self.from_base
 
         if type == 'u':
             res = self.dec_to_bin_unsigned(self.from_base)
@@ -196,13 +193,15 @@ class to_bin:
 
             res = ''.join(['0' if i == '1' else '1' for i in l_res])
 
-            res = self.add_one(res, '1')
+            res = self.add_one(res)
 
             if res[0] == '0':
                 res = '1' + res
             
             if self.n > len(res):
                 res = self.bit_ext(res, type)
+        elif type == 'f':
+            pass
          
         return res
     
@@ -210,3 +209,4 @@ print(to_bin('EE', 32)())
 print(to_bin(-1, 4)())
 print(to_bin(11, 16)())
 print(to_bin(0, 8)())
+print(to_bin(5.50)())
