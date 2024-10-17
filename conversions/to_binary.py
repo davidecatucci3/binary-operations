@@ -57,8 +57,10 @@ class to_bin:
 
         while x != 0 and x not in viewed:
             viewed.append(x)
-
+       
             x *= 2
+            
+            x = round(x, 4)
 
             if x < 1:
                 res += '0'
@@ -220,17 +222,18 @@ class to_bin:
             if self.n > len(res):
                 res = self.bit_ext(res, type)
         elif type == 'f':
-            str_from_base = str(self.from_base)
-        
+            str_from_base = str(abs(self.from_base))
+
             int_part, dec_part = str_from_base.split('.')
 
+            # convert integer part anad decimal part to binary
             bin_int_part = to_bin(int(int_part))()
             bin_dec_part = self.dec_part_to_bin(int(dec_part) * pow(10, -len(str(dec_part))))
             
             bin_num = bin_int_part + '.' + bin_dec_part
-
+        
             idx_dot = bin_num.index('.')
-  
+   
             bias = {
                 16: 5,
                 32: 127,
@@ -243,28 +246,27 @@ class to_bin:
                 64: 55
             }
 
+            # s(ign), e(xponent) and m(antissa)
             s = '1' if self.from_base < 0 else '0'
 
-            e = (len(bin_num) - 1) - (idx_dot - 1)
+            e = idx_dot - 1 
+
             e += bias[self.prec]
             e = to_bin(e)()
-     
+          
             m = bin_num[1:]
             m = m.replace('.', '')
-
+       
+            # rounding mantissa if exceeded
             if len(m) > len_m[self.prec]:
                 m = m[:len_m[self.prec]:]
 
+            # fill with 0's mantissa   
             m = m + ('0' * (len_m[self.prec] - len(m)))
 
             res += s + e + m
         
         return res
-    
-print(to_bin('EE', 32)())
-print(to_bin(-1, 4)())
-print(to_bin(11, 16)())
-print(to_bin(0, 8)())
-print(to_bin(5.50)())
-print(to_bin(-5.50)())
-print(to_bin(-125.23)())
+
+print(to_bin(-5.5182)())
+# print(to_bin(0.00000001)())
