@@ -1,12 +1,14 @@
 class to_bin:
-    def __init__(self, from_base, n=0):
+    def __init__(self, from_base, n=0, prec=32):
         '''
         from_base: number to convert
         n: number of bits in wich youn want you binary number
+        prec: in case you convert a fractional number to binary, I need to know the precision 16, 32 or 64 bits
         '''
 
         self.from_base = from_base
         self.n = n
+        self.prec = prec
 
     @staticmethod
     def add_one(a: str) -> str:
@@ -44,7 +46,34 @@ class to_bin:
 
         return res
     
+    @ staticmethod
+    def dec_part_to_bin(x: int):
+        ''''
+        convert decimal part to binary
+        '''
+
+        res = ''
+        viewed = []
+
+        while x != 0 and x not in viewed:
+            viewed.append(x)
+
+            x *= 2
+
+            if x < 1:
+                res += '0'
+            else:
+                res += '1'
+
+                x -= 1
+   
+        return res
+    
     def bit_ext(self, x, type):
+        '''
+        does a binary extension
+        '''
+
         bit_to_add = self.n - len(x) 
 
         pre = '1' * bit_to_add if type == 's' else '0' * bit_to_add
@@ -93,16 +122,6 @@ class to_bin:
 
         return type
 
-    def is_dec(self) -> bool:
-        '''
-        check if a number is decimal
-        '''
-        
-        if str(abs(self.from_base)).isdigit():
-            return True
-            
-        return False
-
     def __call__(self):
         '''
         check if the number is valid and convert it
@@ -125,7 +144,7 @@ class to_bin:
             return res
         elif isinstance(self.from_base, int) or isinstance(self.from_base, float):
             # check if is not boolean, because True is considered also as int (1)
-            if self.is_dec():
+            if not isinstance(self.from_base, bool):
                 type = self.check_type()
 
                 res = self.dec_to_bin(type)
@@ -201,8 +220,45 @@ class to_bin:
             if self.n > len(res):
                 res = self.bit_ext(res, type)
         elif type == 'f':
-            pass
-         
+            str_from_base = str(self.from_base)
+        
+            int_part, dec_part = str_from_base.split('.')
+
+            bin_int_part = to_bin(int(int_part))()
+            bin_dec_part = self.dec_part_to_bin(int(dec_part) * pow(10, -len(str(dec_part))))
+            
+            bin_num = bin_int_part + '.' + bin_dec_part
+
+            idx_dot = bin_num.index('.')
+  
+            bias = {
+                16: 5,
+                32: 127,
+                64: 1023
+            }
+
+            len_m = {
+                16: 10,
+                32: 23,
+                64: 55
+            }
+
+            s = '1' if self.from_base < 0 else '0'
+
+            e = (len(bin_num) - 1) - (idx_dot - 1)
+            e += bias[self.prec]
+            e = to_bin(e)()
+     
+            m = bin_num[1:]
+            m = m.replace('.', '')
+
+            if len(m) > len_m[self.prec]:
+                m = m[:len_m[self.prec]:]
+
+            m = m + ('0' * (len_m[self.prec] - len(m)))
+
+            res += s + e + m
+        
         return res
     
 print(to_bin('EE', 32)())
@@ -210,3 +266,5 @@ print(to_bin(-1, 4)())
 print(to_bin(11, 16)())
 print(to_bin(0, 8)())
 print(to_bin(5.50)())
+print(to_bin(-5.50)())
+print(to_bin(-125.23)())
