@@ -68,7 +68,7 @@ class to_bin:
                 res += '1'
 
                 x -= 1
-   
+
         return res
     
     def bit_ext(self, x, type):
@@ -223,7 +223,17 @@ class to_bin:
                 res = self.bit_ext(res, type)
         elif type == 'f':
             str_from_base = str(abs(self.from_base))
+         
+            if 'e' in str_from_base:
+                idx_e = str_from_base.index('e')
 
+                str_exp = str_from_base[idx_e + 1:]
+                
+                if str_exp[0] == '-':
+                    str_from_base = format(self.from_base, f'.{int(str_from_base[idx_e + 2:]) + len(str_from_base[:idx_e]) - 2}f')
+                else:
+                    str_from_base = format(self.from_base, '.0f')
+         
             int_part, dec_part = str_from_base.split('.')
 
             # convert integer part anad decimal part to binary
@@ -231,7 +241,7 @@ class to_bin:
             bin_dec_part = self.dec_part_to_bin(int(dec_part) * pow(10, -len(str(dec_part))))
             
             bin_num = bin_int_part + '.' + bin_dec_part
-        
+           
             idx_dot = bin_num.index('.')
    
             bias = {
@@ -253,7 +263,7 @@ class to_bin:
 
             e += bias[self.prec]
             e = to_bin(e)()
-          
+    
             m = bin_num[1:]
             m = m.replace('.', '')
        
@@ -268,5 +278,4 @@ class to_bin:
         
         return res
 
-print(to_bin(-5.5182)())
-# print(to_bin(0.00000001)())
+print(to_bin(0.001223)())
