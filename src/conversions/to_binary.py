@@ -97,7 +97,7 @@ class to_bin:
         
         while count_ones < prec_m:
             power = pow(2, -i)
-    
+
             if power + close_x < x:
                 res += '1'
 
@@ -107,10 +107,13 @@ class to_bin:
             elif power + close_x > x:
                 res += '0'
             else:
-                return '1'
+                if i == 1:
+                    return '1'
+                else:
+                    return res
         
             i += 1
- 
+            
         return res
     
     def bit_ext(self, x: str, type: str):
@@ -297,7 +300,7 @@ class to_bin:
                     str_from_base = format(self.from_base, '.0f')
          
             int_part, dec_part = str_from_base.split('.')
-
+           
             len_e = {
                 16: 5,
                 32: 8,
@@ -318,14 +321,16 @@ class to_bin:
             else:
                 # convert integer part and decimal part to binary
                 bin_int_part = to_bin(int(int_part))()
-             
+                
+                dec_part_sn = float(dec_part) * pow(10, -len(str(dec_part))) # decimal part in scientific notation from 0001 -> 1e-4
+                
                 if int(int_part) >= 1:
-                    bin_dec_part = self.dec_part_to_bin(float(dec_part) * pow(10, -len(str(dec_part))))
+                    bin_dec_part = self.dec_part_to_bin(dec_part_sn)
                 else:
-                    bin_dec_part = self.dec_part_to_bin_2(float(dec_part) * pow(10, -len(str(dec_part))))
+                    bin_dec_part = self.dec_part_to_bin_2(dec_part_sn)
            
                 bin_num = bin_int_part + '.' + bin_dec_part
-                print(bin_num)
+        
                 if bin_num[0] == '1':
                     idx_dot = bin_num.index('.')
 
@@ -342,7 +347,6 @@ class to_bin:
 
                     moves = -moves
 
-                print(shifted_bin_num)
                 bias = {
                     16: 5,
                     32: 127,
@@ -353,7 +357,14 @@ class to_bin:
                 s = '1' if self.from_base < 0 else '0'
             
                 e = moves
+
                 e += bias[self.prec]
+            
+                if e <= 0:
+                    print('ERROR: Maximum normal number representable 2^-126')
+
+                    return False
+
                 e = to_bin(e)()
 
                 if len(e) < len_e[self.prec]:
@@ -378,12 +389,12 @@ class to_bin:
         
         return res
 
-print(to_bin(0.0000000000000001)())
+print(to_bin(0.0000000000000000000000000000000000001)())
 
 '''
 !PROBLEMS!
 
-- rounding or truncate?
-- precison of mantissa for small number
+- implement rounding mantissa
 - +inf, -inf and NaN
+- represent denormals
 '''
