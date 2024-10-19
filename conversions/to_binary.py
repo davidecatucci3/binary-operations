@@ -49,7 +49,7 @@ class to_bin:
     @ staticmethod
     def dec_part_to_bin(x: int):
         ''''
-        convert decimal part to binary
+        convert decimal part to binary (first method that doesn't work for very small numbers)
         '''
 
         res = ''
@@ -69,6 +69,32 @@ class to_bin:
 
                 x -= 1
 
+        return res
+
+    def dec_part_to_bin_2(self, x: int):
+        ''''
+        convert decimal part to binary (second method that workds for very small numbers)
+        '''
+
+        res = ''
+        z = 0
+        i = 1
+        prec_m = 20 # precison of mantissa 
+        
+        while res.count('1') < prec_m:
+            power = pow(2, -i)
+    
+            if power + z < x:
+                z += power
+
+                res += '1'
+            elif power + z > x:
+                res += '0'
+            else:
+                return '1'
+        
+            i += 1
+ 
         return res
     
     def bit_ext(self, x, type):
@@ -223,7 +249,7 @@ class to_bin:
                 res = self.bit_ext(res, type)
         elif type == 'f':
             str_from_base = str(abs(self.from_base))
-        
+            
             # if number is too small or too big
             if 'e' in str_from_base:
                 idx_e = str_from_base.index('e')
@@ -231,25 +257,18 @@ class to_bin:
                 str_exp = str_from_base[idx_e + 1:]
                 
                 if str_exp[0] == '-':
-                    str_from_base = format(self.from_base, f'.{int(str_from_base[idx_e + 2:]) + len(str_from_base[:idx_e]) - 2}f')
+                    if '.' not in str_from_base:
+                        str_from_base = format(self.from_base, f'.{int(str_from_base[idx_e + 2:])}f')
+                    else:
+                        idx_point = str_from_base.index('.')
+
+                        x = len(str_from_base[idx_point + 1:idx_e])
+            
+                        str_from_base = format(self.from_base, f'.{int(str_from_base[idx_e + 2:]) + x}f')
                 else:
                     str_from_base = format(self.from_base, '.0f')
          
             int_part, dec_part = str_from_base.split('.')
-
-            # convert integer part anad decimal part to binary
-            bin_int_part = to_bin(int(int_part))()
-            bin_dec_part = self.dec_part_to_bin(int(dec_part) * pow(10, -len(str(dec_part))))
-          
-            bin_num = bin_int_part + '.' + bin_dec_part
-            print(bin_num)
-            idx_dot = bin_num.index('.')
-   
-            bias = {
-                16: 5,
-                32: 127,
-                64: 1023
-            }
 
             len_e = {
                 16: 5,
@@ -263,37 +282,70 @@ class to_bin:
                 64: 55
             }
 
-            # s(ign), e(xponent) and m(antissa)
-            s = '1' if self.from_base < 0 else '0'
-
-            e = idx_dot - 1 
-            e += bias[self.prec]
-            e = to_bin(e)()
-
-            if len(e) > len_e[self.prec]:
-                print('ERROR: Exponent too large')
-
-                return False
-          
-            m = bin_num[1:]
-            m = m.replace('.', '')
-       
-            # truncate mantissa if exceeded (not rounding)
-            if len(m) > len_m[self.prec]:
-                m = m[:len_m[self.prec]:]
+            # check special cases
+            if int(int_part) == 0 and int(dec_part) == 0:
+                s = '0'
+                e = '0' * len_e[self.prec]
+                m = '0' * len_m[self.prec]
+            else:
+                # convert integer part anad decimal part to binary
+                bin_int_part = to_bin(int(int_part))()
+             
+                if int(int_part) >= 1:
+                    bin_dec_part = self.dec_part_to_bin(float(dec_part) * pow(10, -len(str(dec_part))))
+                else:
+                    bin_dec_part = self.dec_part_to_bin_2(float(dec_part) * pow(10, -len(str(dec_part))))
            
-            # fill with 0's mantissa   
-            m = m + ('0' * (len_m[self.prec] - len(m)))
+                bin_num = bin_int_part + '.' + bin_dec_part
+
+      
+                if bin_num[0] == '1':
+                    idx_dot = bin_num.index('.')
+
+                    moves = idx_dot - 1
+
+                    shifted_bin_num = bin_num[0] + '.' +  bin_num[2:]
+                else:
+                    idx_dot = bin_num.index('.')
+                    idx_one = bin_num.index('1')
+
+                    moves = -(idx_one - idx_dot)
+      
+                    shifted_bin_num = bin_num[moves + 1] + '.' +  bin_num[moves + 2:]
+
+                bias = {
+                    16: 5,
+                    32: 127,
+                    64: 1023
+                }
+
+                # s(ign), e(xponent) and m(antissa)
+                s = '1' if self.from_base < 0 else '0'
+            
+                e = moves
+                e += bias[self.prec]
+                e = to_bin(e)()
+
+                if len(e) < len_e[self.prec]:
+                    bit_to_add = len_e[self.prec] - len(e)
+
+                    e = '0' * bit_to_add + e
+                elif len(e) > len_e[self.prec]:
+                    print('ERROR: Exponent too large')
+
+                    return False
+            
+                m = shifted_bin_num[2:]
+        
+                # truncate mantissa if exceeded (not rounding)
+                if len(m) > len_m[self.prec]:
+                    m = m[:len_m[self.prec]:]
+            
+                # fill with 0's mantissa   
+                m = m + ('0' * (len_m[self.prec] - len(m)))
 
             res += s + '|' + e + '|' + m
         
         return res
 
-print(to_bin(2 ** -127)())
-
-'''
-!PROBLEMS!
-
-1. Conversion of very small or very big numbers is not working (i implemented but is not working well and ypu have to move bits in negative)
-2. Implement Special values, like inf, -inf Nan and denormals
-'''
+print(to_bin(345345345.233)())
