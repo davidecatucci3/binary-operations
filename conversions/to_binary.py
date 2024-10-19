@@ -223,7 +223,8 @@ class to_bin:
                 res = self.bit_ext(res, type)
         elif type == 'f':
             str_from_base = str(abs(self.from_base))
-         
+        
+            # if number is too small or too big
             if 'e' in str_from_base:
                 idx_e = str_from_base.index('e')
 
@@ -239,15 +240,21 @@ class to_bin:
             # convert integer part anad decimal part to binary
             bin_int_part = to_bin(int(int_part))()
             bin_dec_part = self.dec_part_to_bin(int(dec_part) * pow(10, -len(str(dec_part))))
-            
+          
             bin_num = bin_int_part + '.' + bin_dec_part
-           
+            print(bin_num)
             idx_dot = bin_num.index('.')
    
             bias = {
                 16: 5,
                 32: 127,
                 64: 1023
+            }
+
+            len_e = {
+                16: 5,
+                32: 8,
+                64: 11
             }
 
             len_m = {
@@ -260,22 +267,33 @@ class to_bin:
             s = '1' if self.from_base < 0 else '0'
 
             e = idx_dot - 1 
-
             e += bias[self.prec]
             e = to_bin(e)()
-    
+
+            if len(e) > len_e[self.prec]:
+                print('ERROR: Exponent too large')
+
+                return False
+          
             m = bin_num[1:]
             m = m.replace('.', '')
        
-            # rounding mantissa if exceeded
+            # truncate mantissa if exceeded (not rounding)
             if len(m) > len_m[self.prec]:
                 m = m[:len_m[self.prec]:]
-
+           
             # fill with 0's mantissa   
             m = m + ('0' * (len_m[self.prec] - len(m)))
 
-            res += s + e + m
+            res += s + '|' + e + '|' + m
         
         return res
 
-print(to_bin(0.001223)())
+print(to_bin(2 ** -127)())
+
+'''
+!PROBLEMS!
+
+1. Conversion of very small or very big numbers is not working (i implemented but is not working well and ypu have to move bits in negative)
+2. Implement Special values, like inf, -inf Nan and denormals
+'''
