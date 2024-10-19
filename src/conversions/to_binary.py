@@ -2,8 +2,8 @@ class to_bin:
     def __init__(self, from_base, n=0, prec=32):
         '''
         from_base: number to convert
-        n: number of bits in wich youn want you binary number
-        prec: in case you convert a fractional number to binary, I need to know the precision 16, 32 or 64 bits
+        n: number of bits in wich youn want your binary number
+        prec: in case you wan to convert a fractional number, the IEEE 754 has 3 formats (16, 32 or 64) bits
         '''
 
         self.from_base = from_base
@@ -14,13 +14,15 @@ class to_bin:
     def add_one(a: str) -> str:
         '''
         add 1 to a binary number 
+
+        a: binary number
         '''
 
         res = ''
 
-        b =  '1'.zfill(len(a))
+        b =  '1'.zfill(len(a)) # binary number 1
 
-        carry = '0'
+        carry = '0' # carried bit during sum
 
         for i, j in zip(a[::-1], b[::-1]):
             if i == '1' and j == '1' and carry == '0':
@@ -50,17 +52,17 @@ class to_bin:
     def dec_part_to_bin(x: int):
         ''''
         convert decimal part to binary (first method that doesn't work for very small numbers)
+
+        x: decimal number 
         '''
 
         res = ''
-        viewed = []
+        viewed = [] # list of numbers already seen, used to understand when there is a cycle 
 
         while x != 0 and x not in viewed:
             viewed.append(x)
        
             x *= 2
-            
-            x = round(x, 4)
 
             if x < 1:
                 res += '0'
@@ -73,22 +75,36 @@ class to_bin:
 
     def dec_part_to_bin_2(self, x: int):
         ''''
-        convert decimal part to binary (second method that workds for very small numbers)
+        convert decimal part to binary (second method that work for very small numbers)
+
+        x: decimal number
         '''
 
         res = ''
-        z = 0
-        i = 1
-        prec_m = 20 # precison of mantissa 
+
+        close_x = 0 # number that has to be as close as possible to x
+        count_ones = 0
+
+        len_m = {
+            16: 10,
+            32: 23,
+            64: 55
+        }
         
-        while res.count('1') < prec_m:
+        prec_m = len_m[self.prec] # precison of mantissa, for very small fractions like 0.000002341, until when calculate bits
+
+        i = 1
+        
+        while count_ones < prec_m:
             power = pow(2, -i)
     
-            if power + z < x:
-                z += power
-
+            if power + close_x < x:
                 res += '1'
-            elif power + z > x:
+
+                close_x += power
+
+                count_ones += 1
+            elif power + close_x > x:
                 res += '0'
             else:
                 return '1'
@@ -97,14 +113,17 @@ class to_bin:
  
         return res
     
-    def bit_ext(self, x, type):
+    def bit_ext(self, x: str, type: str):
         '''
         does a binary extension
+
+        x: binary number
+        type: s(igned) or u(nsigned)
         '''
 
-        bit_to_add = self.n - len(x) 
+        bit_to_ext = self.n - len(x) 
 
-        pre = '1' * bit_to_add if type == 's' else '0' * bit_to_add
+        pre = '1' * bit_to_ext if type == 's' else '0' * bit_to_ext
 
         x = pre + x
 
@@ -113,6 +132,8 @@ class to_bin:
     def dec_to_bin_unsigned(self, x: str) -> str:
         '''
         convert decimal positive number to binary unsigned 
+
+        x: decimal number
         '''
 
         if x == 0:
@@ -134,8 +155,8 @@ class to_bin:
 
     def check_type(self) -> str:
         '''
-        check if the number is positive or negative,
-        to understand if you have to convert it to unsigned (u), signed (s) or fraction (f)
+        check if the number is positive, negative or float, to understand if you have to
+        convert it to unsigned (u), signed (s) or fraction (f)
         '''
 
         type = ''
@@ -194,6 +215,7 @@ class to_bin:
 
         res = ''
 
+        # correspnding decimal of hex number
         dic = {
             'A': 10,
             'B': 11,
@@ -203,6 +225,7 @@ class to_bin:
             'F': 15
         }
 
+        # remove 0x prefix that can be before a hex number
         if self.from_base.startswith('0x'):
             self.from_base = self.from_base[2:]
 
@@ -214,6 +237,7 @@ class to_bin:
             else:
                 res += self.dec_to_bin_unsigned(dic[i])
         
+        # does bit extension if lenght extended number is greater then actual number
         if self.n > len(res):
             res = self.bit_ext(res, 'u')
    
@@ -222,6 +246,8 @@ class to_bin:
     def dec_to_bin(self, type='u') -> str:
         '''
         convert dec to bin
+
+        type: u(nsigned), s(igned) or f(raction)
         '''
 
         res = ''
@@ -229,6 +255,7 @@ class to_bin:
         if type == 'u':
             res = self.dec_to_bin_unsigned(self.from_base)
 
+            # does bit extension if lenght extended number is greater then actual number
             if self.n > len(res):
                 res = self.bit_ext(res, 'u')
         elif type == 's':
@@ -245,6 +272,7 @@ class to_bin:
             if res[0] == '0':
                 res = '1' + res
             
+            # does bit extension if lenght extended number is greater then actual number
             if self.n > len(res):
                 res = self.bit_ext(res, type)
         elif type == 'f':
@@ -288,7 +316,7 @@ class to_bin:
                 e = '0' * len_e[self.prec]
                 m = '0' * len_m[self.prec]
             else:
-                # convert integer part anad decimal part to binary
+                # convert integer part and decimal part to binary
                 bin_int_part = to_bin(int(int_part))()
              
                 if int(int_part) >= 1:
@@ -297,8 +325,7 @@ class to_bin:
                     bin_dec_part = self.dec_part_to_bin_2(float(dec_part) * pow(10, -len(str(dec_part))))
            
                 bin_num = bin_int_part + '.' + bin_dec_part
-
-      
+                print(bin_num)
                 if bin_num[0] == '1':
                     idx_dot = bin_num.index('.')
 
@@ -309,10 +336,13 @@ class to_bin:
                     idx_dot = bin_num.index('.')
                     idx_one = bin_num.index('1')
 
-                    moves = -(idx_one - idx_dot)
-      
+                    moves = idx_one - idx_dot
+             
                     shifted_bin_num = bin_num[moves + 1] + '.' +  bin_num[moves + 2:]
 
+                    moves = -moves
+
+                print(shifted_bin_num)
                 bias = {
                     16: 5,
                     32: 127,
@@ -337,15 +367,23 @@ class to_bin:
             
                 m = shifted_bin_num[2:]
         
-                # truncate mantissa if exceeded (not rounding)
+                # truncate mantissa if exceeded (is not rounding)
                 if len(m) > len_m[self.prec]:
                     m = m[:len_m[self.prec]:]
             
-                # fill with 0's mantissa   
+                # fill with 0's the mantissa   
                 m = m + ('0' * (len_m[self.prec] - len(m)))
 
             res += s + '|' + e + '|' + m
         
         return res
 
-print(to_bin(345345345.233)())
+print(to_bin(0.0000000000000001)())
+
+'''
+!PROBLEMS!
+
+- rounding or truncate?
+- precison of mantissa for small number
+- +inf, -inf and NaN
+'''
