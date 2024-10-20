@@ -234,11 +234,21 @@ class to_bin:
 
         for i in self.from_base:
             i = i.upper()
-        
+         
             if i.isdigit():
-                res += self.dec_to_bin_unsigned(int(i)).zfill(4)
+                if int(i.isdigit()) <= 0:
+                    print('ERROR: Not valid hex number')
+
+                    raise ValueError
+                else:
+                    res += self.dec_to_bin_unsigned(int(i)).zfill(4)
             else:
-                res += self.dec_to_bin_unsigned(dic[i]).zfill(4)
+                if i in dic.keys():
+                    res += self.dec_to_bin_unsigned(dic[i]).zfill(4)
+                else:
+                    print('ERROR: Not valid hex number')
+
+                    raise ValueError
             
         # does bit extension if lenght extended number is greater then actual number
         if self.n > len(res):
@@ -336,7 +346,7 @@ class to_bin:
                     bin_dec_part = self.dec_part_to_bin_2(dec_part_sn)
        
                 bin_num = bin_int_part + '.' + bin_dec_part
-
+                
                 if bin_num[0] == '1':
                     idx_dot = bin_num.index('.')
 
@@ -354,7 +364,7 @@ class to_bin:
                     shifted_bin_num = bin_num[moves + 1] + '.' +  bin_num[moves + 2:]
 
                     moves = -moves
-            
+      
                 bias = {
                     16: 5,
                     32: 127,
@@ -393,8 +403,8 @@ class to_bin:
                 # fill with 0's the mantissa   
                 m = m + ('0' * (len_m[self.prec] - len(m)))
 
-            res += s + '|' + e + '|' + m
-            #res += s + e + m
+            #res += s + '|' + e + '|' + m
+            res += s + e + m
         
         return res
 
