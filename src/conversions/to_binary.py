@@ -110,7 +110,7 @@ class to_bin:
                 if i == 1:
                     return '1'
                 else:
-                    return res
+                    return res + '1'
         
             i += 1
             
@@ -180,7 +180,7 @@ class to_bin:
 
         valid numbers:
             - hex (str)
-            - dec (int)
+            - dec (int) / inf and -inf (str)
 
         invalid numbers:
             - bin (if you passed 1101 it will read as 1101 base 10)
@@ -190,11 +190,7 @@ class to_bin:
         '''
    
         # check if the number is valid
-        if isinstance(self.from_base, str):
-            res = self.hex_to_bin()
-
-            return res
-        elif isinstance(self.from_base, int) or isinstance(self.from_base, float):
+        if  isinstance(self.from_base, int) or isinstance(self.from_base, float) or self.from_base in ['inf', '-inf']:
             # check if is not boolean, because True is considered also as int (1)
             if not isinstance(self.from_base, bool):
                 type = self.check_type()
@@ -206,6 +202,10 @@ class to_bin:
                 print('ERROR: Boolean is not valid')
 
                 return False
+        elif isinstance(self.from_base, str):
+            res = self.hex_to_bin()
+
+            return res
         else:
             print('ERROR: Invalid number')
 
@@ -236,10 +236,10 @@ class to_bin:
             i = i.upper()
         
             if i.isdigit():
-                res += self.dec_to_bin_unsigned(i)
+                res += self.dec_to_bin_unsigned(int(i)).zfill(4)
             else:
-                res += self.dec_to_bin_unsigned(dic[i])
-        
+                res += self.dec_to_bin_unsigned(dic[i]).zfill(4)
+            
         # does bit extension if lenght extended number is greater then actual number
         if self.n > len(res):
             res = self.bit_ext(res, 'u')
@@ -279,6 +279,24 @@ class to_bin:
             if self.n > len(res):
                 res = self.bit_ext(res, type)
         elif type == 'f':
+            len_e = {
+                16: 5,
+                32: 8,
+                64: 11
+            }
+
+            len_m = {
+                16: 10,
+                32: 23,
+                64: 55
+            }
+        
+            # check if its a special case inf or -inf
+            if self.from_base in ['inf', '-inf']:
+                s = '1' if self.from_base == '-inf' else '0'
+                e = '1' * len_e[self.prec]
+                m = '0' * len_m[self.prec]
+
             str_from_base = str(abs(self.from_base))
             
             # if number is too small or too big
@@ -300,19 +318,7 @@ class to_bin:
                     str_from_base = format(self.from_base, '.0f')
          
             int_part, dec_part = str_from_base.split('.')
-           
-            len_e = {
-                16: 5,
-                32: 8,
-                64: 11
-            }
-
-            len_m = {
-                16: 10,
-                32: 23,
-                64: 55
-            }
-
+        
             # check special cases
             if int(int_part) == 0 and int(dec_part) == 0:
                 s = '0'
@@ -323,20 +329,22 @@ class to_bin:
                 bin_int_part = to_bin(int(int_part))()
                 
                 dec_part_sn = float(dec_part) * pow(10, -len(str(dec_part))) # decimal part in scientific notation from 0001 -> 1e-4
-                
+              
                 if int(int_part) >= 1:
                     bin_dec_part = self.dec_part_to_bin(dec_part_sn)
                 else:
                     bin_dec_part = self.dec_part_to_bin_2(dec_part_sn)
-           
+       
                 bin_num = bin_int_part + '.' + bin_dec_part
-        
+
                 if bin_num[0] == '1':
                     idx_dot = bin_num.index('.')
 
                     moves = idx_dot - 1
 
-                    shifted_bin_num = bin_num[0] + '.' +  bin_num[2:]
+                    bin_num = bin_num.replace('.', '')
+
+                    shifted_bin_num = bin_num[0] + '.' +  bin_num[1:]
                 else:
                     idx_dot = bin_num.index('.')
                     idx_one = bin_num.index('1')
@@ -346,7 +354,7 @@ class to_bin:
                     shifted_bin_num = bin_num[moves + 1] + '.' +  bin_num[moves + 2:]
 
                     moves = -moves
-
+            
                 bias = {
                     16: 5,
                     32: 127,
@@ -378,7 +386,7 @@ class to_bin:
             
                 m = shifted_bin_num[2:]
         
-                # truncate mantissa if exceeded (is not rounding)
+                # round mantissa
                 if len(m) > len_m[self.prec]:
                     m = m[:len_m[self.prec]:]
             
@@ -386,15 +394,13 @@ class to_bin:
                 m = m + ('0' * (len_m[self.prec] - len(m)))
 
             res += s + '|' + e + '|' + m
+            #res += s + e + m
         
         return res
-
-print(to_bin(0.0000000000000000000000000000000000001)())
 
 '''
 !PROBLEMS!
 
 - implement rounding mantissa
-- +inf, -inf and NaN
-- represent denormals
+- implement denormals (don't make print('ERROR: Maximum normal number representable 2^-126'))
 '''
