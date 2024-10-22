@@ -113,7 +113,7 @@ class to_bin:
                     return res + '1'
         
             i += 1
-            
+    
         return res
     
     def bit_ext(self, x: str, type: str):
@@ -218,7 +218,7 @@ class to_bin:
 
         res = ''
 
-        # correspnding decimal of hex number
+        # corresponding decimal of hex number
         dic = {
             'A': 10,
             'B': 11,
@@ -300,13 +300,15 @@ class to_bin:
                 32: 23,
                 64: 55
             }
-        
+
             # check if its a special case inf or -inf
             if self.from_base in ['inf', '-inf']:
                 s = '1' if self.from_base == '-inf' else '0'
                 e = '1' * len_e[self.prec]
                 m = '0' * len_m[self.prec]
 
+                return s + e + m
+    
             str_from_base = str(abs(self.from_base))
             
             # if number is too small or too big
@@ -328,10 +330,10 @@ class to_bin:
                     str_from_base = format(self.from_base, '.0f')
          
             int_part, dec_part = str_from_base.split('.')
-        
+
             # check special cases
             if int(int_part) == 0 and int(dec_part) == 0:
-                s = '0'
+                s = '1' if str(self.from_base)[0] == '-' else '0'
                 e = '0' * len_e[self.prec]
                 m = '0' * len_m[self.prec]
             else:
@@ -346,7 +348,7 @@ class to_bin:
                     bin_dec_part = self.dec_part_to_bin_2(dec_part_sn)
        
                 bin_num = bin_int_part + '.' + bin_dec_part
-                
+        
                 if bin_num[0] == '1':
                     idx_dot = bin_num.index('.')
 
@@ -364,7 +366,7 @@ class to_bin:
                     shifted_bin_num = bin_num[moves + 1] + '.' +  bin_num[moves + 2:]
 
                     moves = -moves
-      
+ 
                 bias = {
                     16: 5,
                     32: 127,
@@ -377,14 +379,14 @@ class to_bin:
                 e = moves
 
                 e += bias[self.prec]
-            
+                print(e)
                 if e <= 0:
                     print('ERROR: Maximum normal number representable 2^-126')
 
                     return False
 
                 e = to_bin(e)()
-
+             
                 if len(e) < len_e[self.prec]:
                     bit_to_add = len_e[self.prec] - len(e)
 
@@ -395,22 +397,27 @@ class to_bin:
                     return False
             
                 m = shifted_bin_num[2:]
-        
+               
                 # round mantissa
                 if len(m) > len_m[self.prec]:
-                    m = m[:len_m[self.prec]:]
-            
+                    m = m[:len_m[self.prec] + 1]
+
+                    if m[-1] == '0':
+                        m = m[:-1]
+                    else:
+                        m = self.add_one(m[:-1])
+
                 # fill with 0's the mantissa   
                 m = m + ('0' * (len_m[self.prec] - len(m)))
 
-            #res += s + '|' + e + '|' + m
             res += s + e + m
         
         return res
+print(to_bin(1.e-45)())
 
 '''
 !PROBLEMS!
 
-- implement rounding mantissa
 - implement denormals (don't make print('ERROR: Maximum normal number representable 2^-126'))
 '''
+
