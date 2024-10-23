@@ -72,7 +72,7 @@ class to_bin:
                 x -= 1
 
         return res
-
+    
     def dec_part_to_bin_2(self, x: int):
         ''''
         convert decimal part to binary (second method that work for very small numbers)
@@ -348,7 +348,7 @@ class to_bin:
                     bin_dec_part = self.dec_part_to_bin_2(dec_part_sn)
        
                 bin_num = bin_int_part + '.' + bin_dec_part
-        
+               
                 if bin_num[0] == '1':
                     idx_dot = bin_num.index('.')
 
@@ -366,7 +366,7 @@ class to_bin:
                     shifted_bin_num = bin_num[moves + 1] + '.' +  bin_num[moves + 2:]
 
                     moves = -moves
- 
+    
                 bias = {
                     16: 5,
                     32: 127,
@@ -379,12 +379,16 @@ class to_bin:
                 e = moves
 
                 e += bias[self.prec]
-                print(e)
+     
                 if e <= 0:
-                    print('ERROR: Maximum normal number representable 2^-126')
+                    # check denormal number, special case
+                    if -(len_m[self.prec] + bias[self.prec]) <= e - 127 < -bias[self.prec] - 1:
+                        pass
+                    else:
+                        print('ERROR: Maximum normal number representable 2^-126')
 
-                    return False
-
+                        return False
+                
                 e = to_bin(e)()
              
                 if len(e) < len_e[self.prec]:
@@ -397,7 +401,7 @@ class to_bin:
                     return False
             
                 m = shifted_bin_num[2:]
-               
+              
                 # round mantissa
                 if len(m) > len_m[self.prec]:
                     m = m[:len_m[self.prec] + 1]
@@ -410,14 +414,15 @@ class to_bin:
                 # fill with 0's the mantissa   
                 m = m + ('0' * (len_m[self.prec] - len(m)))
 
+            #res = s + '|' + e + '|' + m
             res += s + e + m
         
         return res
-print(to_bin(1.e-45)())
+
+print(to_bin(1e-45)())
 
 '''
 !PROBLEMS!
 
 - implement denormals (don't make print('ERROR: Maximum normal number representable 2^-126'))
 '''
-
